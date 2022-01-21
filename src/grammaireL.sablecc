@@ -2,27 +2,137 @@ Package sc;
 
 Helpers
 
-lettre = [['a' .. 'z'] + ['A' .. 'Z']];
-chiffre = ['0' .. '9'];
-alpha = [lettre + ['_' + '$']];
-alphanum = [lettre + chiffre];
+letter = [['a' .. 'z'] + ['A' .. 'Z']];
+number = ['0' .. '9'];
+alpha = [letter + ['_' + '$']];
+alphanum = [letter + number];
 
 Tokens
 
-espaces = (' ' | 13 | 10)+;
-commentaire= '#' [[0 .. 0xffff] - [10 + 13]]* (10 | 13 | 10 13);
-parenthese_ouvrante = '(';
-parenthese_fermante = ')';
-virgule = ',';
-nombre = chiffre+;
+spaces = (' ' | 13 | 10)+;
+comment = '#' [[0 .. 0xffff] - [10 + 13]]* (10 | 13 | 10 13);
+opening_parenthesis = '(';
+closing_parenthesis = ')';
+comma = ',';
+numbers = number+;
 identif = alpha alphanum*;
+or = '|';
+and = '&';
+plus = '+';
+minus = '-';
+mult = '*';
+div = '/';
+equal = '=';
+inf = '<';
+no = '!';
+semicolon = ';';
+opening_brace = '{';
+closing_brace = '}';
+opening_bracket = '[';
+closing_bracket = ']';
+read = 'lire()';
+write = 'ecrire(';
+if = 'si';
+then = 'alors';
+else = 'sinon';
+while = 'tantque';
+do = 'faire';
+return = 'retour';
+whole_number = 'entier';
 
 Ignored Tokens
 
-espaces, commentaire;
+spaces, comment;
 
 Productions
 
-programme =
-{prog1} parenthese_ouvrante identif virgule nombre parenthese_fermante |
-{prog2} parenthese_ouvrante nombre parenthese_fermante ;
+program =
+{prog} optional_declaration_variable list_declaration_function;
+
+expr =
+{expr_or} expr or expr_and |
+{expr_or_finish} expr_and;
+
+expr_and = 
+{expr_and} expr_and and expr_compare | 
+{expr_and_finish} expr_compare;
+
+expr_compare = 
+{expr_equal} expr_compare equal expr_add |
+{expr_inf} expr_compare inf expr_add |
+{expr_compare_finish} expr_add;
+
+expr_add =
+{expr_add} expr_add plus expr_mul |
+{expr_minus} expr_add minus expr_mul |
+{expr_add_finish} expr_mul;
+
+expr_mul =
+{expr_mul} expr_mul mult expr_no |
+{expr_div} expr_mul div expr_no |
+{expr_mul_finish} expr_no;
+
+expr_no =
+{expr_no} no expr_no |
+{expr_no_finish} expr_end;
+
+expr_end =
+{expr_in_parenthesis} opening_parenthesis expr closing_parenthesis |
+{numbers} numbers |
+{read} read |
+{variable} variable |
+{function} function;
+
+variable =
+{simple_variable} identif|
+{array_of_variables} identif opening_bracket expr closing_bracket;
+
+function =
+{function_signature} identif opening_parenthesis list_of_expr closing_parenthesis;
+
+list_of_expr =
+{list_of_expr} second_list_of_expr |
+{epsilon} ;
+
+second_list_of_expr =
+{second_list_of_expr} expr comma second_list_of_expr |
+{end_list_of_expr} expr;
+
+bloc_instruction =
+{bloc_instruction} opening_parenthesis list_instruction closing_parenthesis;
+
+list_instruction =
+{list_instruction} instruction list_instruction |
+{end_list_instruction} ;
+
+instruction =
+{affectation} variable equal expr semicolon |
+{if} if expr then bloc_instruction |
+{if_else} if expr then bloc_instruction else bloc_instruction |
+{while} while expr do bloc_instruction |
+{write} write expr closing_parenthesis semicolon |
+{function_call} function semicolon |
+{new_bloc_instruction} bloc_instruction |
+{empty} semicolon |
+{return} return expr semicolon;
+
+list_declaration_variable =
+{list_declaration_variable} declaration_variable comma list_declaration_variable |
+{end_list_declaration_variable} declaration_variable;
+
+list_declaration_function =
+{list_declaration_function} declaration_function list_declaration_function |
+{end_list_declaration_function} ;
+
+declaration_variable =
+{simple_declaration_variable} whole_number identif|
+{array_declaration_variable} whole_number identif opening_bracket numbers closing_bracket;
+
+optional_declaration_variable =
+{yes_declaration_variable} list_declaration_variable |
+{no_declaration_variable} ;
+
+declaration_function =
+{declaration_function_with_parameter} identif opening_parenthesis list_declaration_variable closing_parenthesis optional_declaration_variable bloc_instruction |
+{declaration_function_without_parameter} identif opening_parenthesis closing_parenthesis optional_declaration_variable bloc_instruction;
+
