@@ -15,7 +15,6 @@ opening_parenthesis = '(';
 closing_parenthesis = ')';
 comma = ',';
 numbers = number+;
-identif = alpha alphanum*;
 or = '|';
 and = '&';
 plus = '+';
@@ -39,6 +38,7 @@ while = 'tantque';
 do = 'faire';
 return = 'retour';
 whole_number = 'entier';
+identif = alpha alphanum*;
 
 Ignored Tokens
 
@@ -99,7 +99,7 @@ second_list_of_expr =
 {end_list_of_expr} expr;
 
 bloc_instruction =
-{bloc_instruction} opening_parenthesis list_instruction closing_parenthesis;
+{bloc_instruction} opening_brace list_instruction closing_brace;
 
 list_instruction =
 {list_instruction} instruction list_instruction |
@@ -108,13 +108,16 @@ list_instruction =
 instruction =
 {affectation} variable equal expr semicolon |
 {if} if expr then bloc_instruction |
-{if_else} if expr then bloc_instruction else bloc_instruction |
+{if_else} if expr then bloc_instruction else_bloc |
 {while} while expr do bloc_instruction |
 {write} write expr closing_parenthesis semicolon |
 {function_call} function semicolon |
 {new_bloc_instruction} bloc_instruction |
 {empty} semicolon |
 {return} return expr semicolon;
+
+else_bloc =
+{else_bloc} else bloc_instruction;
 
 list_declaration_variable =
 {list_declaration_variable} declaration_variable comma list_declaration_variable |
@@ -129,10 +132,13 @@ declaration_variable =
 {array_declaration_variable} whole_number identif opening_bracket numbers closing_bracket;
 
 optional_declaration_variable =
-{yes_declaration_variable} list_declaration_variable |
+{yes_declaration_variable} list_declaration_variable semicolon |
 {no_declaration_variable} ;
 
 declaration_function =
-{declaration_function_with_parameter} identif opening_parenthesis list_declaration_variable closing_parenthesis optional_declaration_variable bloc_instruction |
-{declaration_function_without_parameter} identif opening_parenthesis closing_parenthesis optional_declaration_variable bloc_instruction;
+{declaration_function_with_parameter} identif list_param optional_declaration_variable bloc_instruction ;
+
+list_param =
+{with_param} opening_parenthesis list_declaration_variable closing_parenthesis |
+{without_param} opening_parenthesis closing_parenthesis;
 
