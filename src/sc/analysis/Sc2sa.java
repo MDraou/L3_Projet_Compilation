@@ -499,7 +499,7 @@ public class Sc2sa extends DepthFirstAdapter
     {
         inAExprNoExprNo(node);
 
-        SaExp op1 = null;
+        SaExp op = null;
 
         if(node.getNo() != null)
         {
@@ -508,10 +508,10 @@ public class Sc2sa extends DepthFirstAdapter
         if(node.getExprNo() != null)
         {
             node.getExprNo().apply(this);
-            op1 = (SaExp) this.returnValue;
+            op = (SaExp) this.returnValue;
         }
 
-        this.returnValue = new SaExpNot(op1);
+        this.returnValue = new SaExpNot(op);
 
         outAExprNoExprNo(node);
     }
@@ -581,10 +581,14 @@ public class Sc2sa extends DepthFirstAdapter
     public void caseANumbersExprEnd(ANumbersExprEnd node)
     {
         inANumbersExprEnd(node);
+
         if(node.getNumbers() != null)
         {
             node.getNumbers().apply(this);
         }
+
+        this.returnValue = new SaExpInt(Integer.parseInt(node.getNumbers().getText()));
+
         outANumbersExprEnd(node);
     }
 
@@ -606,6 +610,9 @@ public class Sc2sa extends DepthFirstAdapter
         {
             node.getRead().apply(this);
         }
+
+        this.returnValue = new SaExpLire();
+
         outAReadExprEnd(node);
     }
 
@@ -665,10 +672,17 @@ public class Sc2sa extends DepthFirstAdapter
     public void caseASimpleVariableVariable(ASimpleVariableVariable node)
     {
         inASimpleVariableVariable(node);
+
+        SaVar op = null;
+
         if(node.getIdentif() != null)
         {
             node.getIdentif().apply(this);
+            op = new SaVarSimple(node.getIdentif().getText());
         }
+
+        this.returnValue = new SaExpVar(op);
+
         outASimpleVariableVariable(node);
     }
 
@@ -686,6 +700,9 @@ public class Sc2sa extends DepthFirstAdapter
     public void caseAArrayOfVariablesVariable(AArrayOfVariablesVariable node)
     {
         inAArrayOfVariablesVariable(node);
+
+        SaVar op = null;
+
         if(node.getIdentif() != null)
         {
             node.getIdentif().apply(this);
