@@ -702,10 +702,13 @@ public class Sc2sa extends DepthFirstAdapter
         inAArrayOfVariablesVariable(node);
 
         SaVar op = null;
+        String name = null;
+        SaExp indice = null;
 
         if(node.getIdentif() != null)
         {
             node.getIdentif().apply(this);
+            name = node.getIdentif().getText();
         }
         if(node.getOpeningBracket() != null)
         {
@@ -714,11 +717,16 @@ public class Sc2sa extends DepthFirstAdapter
         if(node.getExpr() != null)
         {
             node.getExpr().apply(this);
+            indice = (SaExp) this.returnValue;
         }
         if(node.getClosingBracket() != null)
         {
             node.getClosingBracket().apply(this);
         }
+
+        op = new SaVarIndicee(name,indice);
+        this.returnValue = new SaExpVar(op);
+
         outAArrayOfVariablesVariable(node);
     }
 
@@ -736,9 +744,15 @@ public class Sc2sa extends DepthFirstAdapter
     public void caseAFunctionSignatureFunction(AFunctionSignatureFunction node)
     {
         inAFunctionSignatureFunction(node);
+
+        SaAppel op = null;
+        String name = null;
+        SaLExp argument = null;
+
         if(node.getIdentif() != null)
         {
             node.getIdentif().apply(this);
+            name = node.getIdentif().getText();
         }
         if(node.getOpeningParenthesis() != null)
         {
@@ -747,11 +761,16 @@ public class Sc2sa extends DepthFirstAdapter
         if(node.getListOfExpr() != null)
         {
             node.getListOfExpr().apply(this);
+            argument = (SaLExp) this.returnValue;
         }
         if(node.getClosingParenthesis() != null)
         {
             node.getClosingParenthesis().apply(this);
         }
+
+        op = new SaAppel(name,argument);
+        this.returnValue = new SaExpAppel(op);
+
         outAFunctionSignatureFunction(node);
     }
 
