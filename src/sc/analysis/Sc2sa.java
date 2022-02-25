@@ -809,6 +809,7 @@ public class Sc2sa extends DepthFirstAdapter
     public void caseAEpsilonListOfExpr(AEpsilonListOfExpr node)
     {
         inAEpsilonListOfExpr(node);
+        this.returnValue = null;
         outAEpsilonListOfExpr(node);
     }
 
@@ -826,9 +827,13 @@ public class Sc2sa extends DepthFirstAdapter
     public void caseASecondListOfExprSecondListOfExpr(ASecondListOfExprSecondListOfExpr node)
     {
         inASecondListOfExprSecondListOfExpr(node);
+        SaExp op1 = null;
+        SaLExp op2 = null;
+
         if(node.getExpr() != null)
         {
             node.getExpr().apply(this);
+            op1 = (SaExp) this.returnValue;
         }
         if(node.getComma() != null)
         {
@@ -837,7 +842,9 @@ public class Sc2sa extends DepthFirstAdapter
         if(node.getSecondListOfExpr() != null)
         {
             node.getSecondListOfExpr().apply(this);
+            op2 = (SaLExp) this.returnValue;
         }
+        this.returnValue = new SaLExp(op1,op2);
         outASecondListOfExprSecondListOfExpr(node);
     }
 
@@ -876,6 +883,9 @@ public class Sc2sa extends DepthFirstAdapter
     public void caseABlocInstructionBlocInstruction(ABlocInstructionBlocInstruction node)
     {
         inABlocInstructionBlocInstruction(node);
+
+        SaLInst op = null;
+
         if(node.getOpeningBrace() != null)
         {
             node.getOpeningBrace().apply(this);
@@ -883,11 +893,13 @@ public class Sc2sa extends DepthFirstAdapter
         if(node.getListInstruction() != null)
         {
             node.getListInstruction().apply(this);
+            op = (SaLInst) this.returnValue;
         }
         if(node.getClosingBrace() != null)
         {
             node.getClosingBrace().apply(this);
         }
+        this.returnValue = new SaInstBloc(op);
         outABlocInstructionBlocInstruction(node);
     }
 
