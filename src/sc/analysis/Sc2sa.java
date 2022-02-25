@@ -917,14 +917,19 @@ public class Sc2sa extends DepthFirstAdapter
     public void caseAListInstructionListInstruction(AListInstructionListInstruction node)
     {
         inAListInstructionListInstruction(node);
+        SaInst op1 = null;
+        SaLInst op2 = null;
         if(node.getInstruction() != null)
         {
             node.getInstruction().apply(this);
+            op1 = (SaInst) this.returnValue;
         }
         if(node.getListInstruction() != null)
         {
             node.getListInstruction().apply(this);
+            op2 = (SaLInst) this.returnValue;
         }
+        this.returnValue = new SaLInst(op1,op2);
         outAListInstructionListInstruction(node);
     }
 
@@ -942,6 +947,7 @@ public class Sc2sa extends DepthFirstAdapter
     public void caseAEndListInstructionListInstruction(AEndListInstructionListInstruction node)
     {
         inAEndListInstructionListInstruction(node);
+        this.returnValue = null;
         outAEndListInstructionListInstruction(node);
     }
 
@@ -959,9 +965,12 @@ public class Sc2sa extends DepthFirstAdapter
     public void caseAAffectationInstruction(AAffectationInstruction node)
     {
         inAAffectationInstruction(node);
+        SaVar op1 = null;
+        SaExp op2 = null;
         if(node.getVariable() != null)
         {
             node.getVariable().apply(this);
+            op1 = (SaVar) this.returnValue;
         }
         if(node.getEqual() != null)
         {
@@ -970,11 +979,13 @@ public class Sc2sa extends DepthFirstAdapter
         if(node.getExpr() != null)
         {
             node.getExpr().apply(this);
+            op2 = (SaExp) this.returnValue;
         }
         if(node.getSemicolon() != null)
         {
             node.getSemicolon().apply(this);
         }
+        this.returnValue = new SaInstAffect(op1,op2);
         outAAffectationInstruction(node);
     }
 
@@ -992,6 +1003,8 @@ public class Sc2sa extends DepthFirstAdapter
     public void caseAIfInstruction(AIfInstruction node)
     {
         inAIfInstruction(node);
+        SaExp op1 = null;
+        SaInst op2 = null;
         if(node.getIf() != null)
         {
             node.getIf().apply(this);
@@ -999,6 +1012,7 @@ public class Sc2sa extends DepthFirstAdapter
         if(node.getExpr() != null)
         {
             node.getExpr().apply(this);
+            op1 = (SaExp) this.returnValue;
         }
         if(node.getThen() != null)
         {
@@ -1007,7 +1021,9 @@ public class Sc2sa extends DepthFirstAdapter
         if(node.getBlocInstruction() != null)
         {
             node.getBlocInstruction().apply(this);
+            op2 = (SaInst) this.returnValue;
         }
+        this.returnValue = new SaInstSi(op1,op2,null);
         outAIfInstruction(node);
     }
 
@@ -1025,6 +1041,9 @@ public class Sc2sa extends DepthFirstAdapter
     public void caseAIfElseInstruction(AIfElseInstruction node)
     {
         inAIfElseInstruction(node);
+        SaExp op1 = null;
+        SaInst op2 = null;
+        SaInst op3 = null;
         if(node.getIf() != null)
         {
             node.getIf().apply(this);
@@ -1032,6 +1051,7 @@ public class Sc2sa extends DepthFirstAdapter
         if(node.getExpr() != null)
         {
             node.getExpr().apply(this);
+            op1 = (SaExp) this.returnValue;
         }
         if(node.getThen() != null)
         {
@@ -1040,11 +1060,14 @@ public class Sc2sa extends DepthFirstAdapter
         if(node.getBlocInstruction() != null)
         {
             node.getBlocInstruction().apply(this);
+            op2 = (SaInst) this.returnValue;
         }
         if(node.getElseBloc() != null)
         {
             node.getElseBloc().apply(this);
+            op3 = (SaInst) this.returnValue;
         }
+        this.returnValue = new SaInstSi(op1,op2,op3);
         outAIfElseInstruction(node);
     }
 
@@ -1062,6 +1085,8 @@ public class Sc2sa extends DepthFirstAdapter
     public void caseAWhileInstruction(AWhileInstruction node)
     {
         inAWhileInstruction(node);
+        SaExp op1 = null;
+        SaInst op2 = null;
         if(node.getWhile() != null)
         {
             node.getWhile().apply(this);
@@ -1069,6 +1094,7 @@ public class Sc2sa extends DepthFirstAdapter
         if(node.getExpr() != null)
         {
             node.getExpr().apply(this);
+            op1 = (SaExp) this.returnValue;
         }
         if(node.getDo() != null)
         {
@@ -1077,6 +1103,7 @@ public class Sc2sa extends DepthFirstAdapter
         if(node.getBlocInstruction() != null)
         {
             node.getBlocInstruction().apply(this);
+            op2 = (SaInst) this.returnValue;
         }
         outAWhileInstruction(node);
     }
