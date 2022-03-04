@@ -28,12 +28,14 @@ public class Sc2sa extends DepthFirstAdapter
 
     public void defaultIn(@SuppressWarnings("unused") Node node)
     {
-        System.out.println("<" +node.getClass().getName() +">");
+        //cela servait pour débugger
+        //System.out.println("<" +node.getClass().getName() +">");
     }
 
     public void defaultOut(@SuppressWarnings("unused") Node node)
     {
-        System.out.println("</" +node.getClass().getName() +">");
+        //cela servait pour débugger
+        //System.out.println("</" +node.getClass().getName() +">");
     }
 
     @Override
@@ -866,10 +868,13 @@ public class Sc2sa extends DepthFirstAdapter
     public void caseAEndListOfExprSecondListOfExpr(AEndListOfExprSecondListOfExpr node)
     {
         inAEndListOfExprSecondListOfExpr(node);
+        SaExp op = null;
         if(node.getExpr() != null)
         {
             node.getExpr().apply(this);
+            op = (SaExp) this.returnValue;
         }
+        this.returnValue = new SaLExp(op,null);
         outAEndListOfExprSecondListOfExpr(node);
     }
 
