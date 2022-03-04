@@ -12,6 +12,10 @@ public class Sc2sa extends DepthFirstAdapter
 
     private SaNode returnValue;
 
+    public SaNode getRoot() {
+        return this.returnValue;
+    }
+
     public void inStart(Start node)
     {
         defaultIn(node);
@@ -24,12 +28,12 @@ public class Sc2sa extends DepthFirstAdapter
 
     public void defaultIn(@SuppressWarnings("unused") Node node)
     {
-        // Do nothing
+        System.out.println("<" +node.getClass().getName() +">");
     }
 
     public void defaultOut(@SuppressWarnings("unused") Node node)
     {
-        // Do nothing
+        System.out.println("</" +node.getClass().getName() +">");
     }
 
     @Override
@@ -769,7 +773,7 @@ public class Sc2sa extends DepthFirstAdapter
         }
 
         op = new SaAppel(name,argument);
-        this.returnValue = new SaExpAppel(op);
+        this.returnValue = op;
 
         outAFunctionSignatureFunction(node);
     }
@@ -917,6 +921,7 @@ public class Sc2sa extends DepthFirstAdapter
     public void caseAListInstructionListInstruction(AListInstructionListInstruction node)
     {
         inAListInstructionListInstruction(node);
+        SaExpAppel temp = null;
         SaInst op1 = null;
         SaLInst op2 = null;
         if(node.getInstruction() != null)
@@ -965,12 +970,14 @@ public class Sc2sa extends DepthFirstAdapter
     public void caseAAffectationInstruction(AAffectationInstruction node)
     {
         inAAffectationInstruction(node);
+        SaExpVar temp = null;
         SaVar op1 = null;
         SaExp op2 = null;
         if(node.getVariable() != null)
         {
             node.getVariable().apply(this);
-            op1 = (SaVar) this.returnValue;
+            temp = (SaExpVar) this.returnValue;
+            op1 = temp.getVar();
         }
         if(node.getEqual() != null)
         {
@@ -1105,6 +1112,7 @@ public class Sc2sa extends DepthFirstAdapter
             node.getBlocInstruction().apply(this);
             op2 = (SaInst) this.returnValue;
         }
+        this.returnValue = new SaInstTantQue(op1,op2);
         outAWhileInstruction(node);
     }
 
@@ -1122,6 +1130,9 @@ public class Sc2sa extends DepthFirstAdapter
     public void caseAWriteInstruction(AWriteInstruction node)
     {
         inAWriteInstruction(node);
+
+        SaExp op = null;
+
         if(node.getWrite() != null)
         {
             node.getWrite().apply(this);
@@ -1129,6 +1140,7 @@ public class Sc2sa extends DepthFirstAdapter
         if(node.getExpr() != null)
         {
             node.getExpr().apply(this);
+            op = (SaExp) this.returnValue;
         }
         if(node.getClosingParenthesis() != null)
         {
@@ -1138,6 +1150,7 @@ public class Sc2sa extends DepthFirstAdapter
         {
             node.getSemicolon().apply(this);
         }
+        this.returnValue = new SaInstEcriture(op);
         outAWriteInstruction(node);
     }
 
@@ -1155,14 +1168,17 @@ public class Sc2sa extends DepthFirstAdapter
     public void caseAFunctionCallInstruction(AFunctionCallInstruction node)
     {
         inAFunctionCallInstruction(node);
+        SaExp op = null;
         if(node.getFunction() != null)
         {
             node.getFunction().apply(this);
+            op = (SaExp) this.returnValue;
         }
         if(node.getSemicolon() != null)
         {
             node.getSemicolon().apply(this);
         }
+        this.returnValue = op;
         outAFunctionCallInstruction(node);
     }
 
@@ -1205,6 +1221,7 @@ public class Sc2sa extends DepthFirstAdapter
         {
             node.getSemicolon().apply(this);
         }
+        this.returnValue = null;
         outAEmptyInstruction(node);
     }
 
@@ -1222,6 +1239,9 @@ public class Sc2sa extends DepthFirstAdapter
     public void caseAReturnInstruction(AReturnInstruction node)
     {
         inAReturnInstruction(node);
+
+        SaExp op = null;
+
         if(node.getReturn() != null)
         {
             node.getReturn().apply(this);
@@ -1229,11 +1249,13 @@ public class Sc2sa extends DepthFirstAdapter
         if(node.getExpr() != null)
         {
             node.getExpr().apply(this);
+            op = (SaExp) this.returnValue;
         }
         if(node.getSemicolon() != null)
         {
             node.getSemicolon().apply(this);
         }
+        this.returnValue = new SaInstRetour(op);
         outAReturnInstruction(node);
     }
 
@@ -1276,9 +1298,12 @@ public class Sc2sa extends DepthFirstAdapter
     public void caseAListDeclarationVariableListDeclarationVariable(AListDeclarationVariableListDeclarationVariable node)
     {
         inAListDeclarationVariableListDeclarationVariable(node);
+        SaDec op1 = null;
+        SaLDec op2 = null;
         if(node.getDeclarationVariable() != null)
         {
             node.getDeclarationVariable().apply(this);
+            op1 = (SaDec) this.returnValue;
         }
         if(node.getComma() != null)
         {
@@ -1287,7 +1312,9 @@ public class Sc2sa extends DepthFirstAdapter
         if(node.getListDeclarationVariable() != null)
         {
             node.getListDeclarationVariable().apply(this);
+            op2 = (SaLDec) this.returnValue;
         }
+        this.returnValue = new SaLDec(op1,op2);
         outAListDeclarationVariableListDeclarationVariable(node);
     }
 
@@ -1305,10 +1332,13 @@ public class Sc2sa extends DepthFirstAdapter
     public void caseAEndListDeclarationVariableListDeclarationVariable(AEndListDeclarationVariableListDeclarationVariable node)
     {
         inAEndListDeclarationVariableListDeclarationVariable(node);
+        SaDec op = null;
         if(node.getDeclarationVariable() != null)
         {
             node.getDeclarationVariable().apply(this);
+            op = (SaDec) this.returnValue;
         }
+        this.returnValue = new SaLDec(op,null);
         outAEndListDeclarationVariableListDeclarationVariable(node);
     }
 
@@ -1326,14 +1356,19 @@ public class Sc2sa extends DepthFirstAdapter
     public void caseAListDeclarationFunctionListDeclarationFunction(AListDeclarationFunctionListDeclarationFunction node)
     {
         inAListDeclarationFunctionListDeclarationFunction(node);
+        SaDec op1 = null;
+        SaLDec op2 = null;
         if(node.getDeclarationFunction() != null)
         {
             node.getDeclarationFunction().apply(this);
+            op1 = (SaDec) this.returnValue;
         }
         if(node.getListDeclarationFunction() != null)
         {
             node.getListDeclarationFunction().apply(this);
+            op2 = (SaLDec) this.returnValue;
         }
+        this.returnValue = new SaLDec(op1,op2);
         outAListDeclarationFunctionListDeclarationFunction(node);
     }
 
@@ -1351,6 +1386,7 @@ public class Sc2sa extends DepthFirstAdapter
     public void caseAEndListDeclarationFunctionListDeclarationFunction(AEndListDeclarationFunctionListDeclarationFunction node)
     {
         inAEndListDeclarationFunctionListDeclarationFunction(node);
+        this.returnValue = null;
         outAEndListDeclarationFunctionListDeclarationFunction(node);
     }
 
@@ -1368,6 +1404,7 @@ public class Sc2sa extends DepthFirstAdapter
     public void caseASimpleDeclarationVariableDeclarationVariable(ASimpleDeclarationVariableDeclarationVariable node)
     {
         inASimpleDeclarationVariableDeclarationVariable(node);
+        String name = "";
         if(node.getWholeNumber() != null)
         {
             node.getWholeNumber().apply(this);
@@ -1375,7 +1412,9 @@ public class Sc2sa extends DepthFirstAdapter
         if(node.getIdentif() != null)
         {
             node.getIdentif().apply(this);
+            name = node.getIdentif().getText();
         }
+        this.returnValue = new SaDecVar(name);
         outASimpleDeclarationVariableDeclarationVariable(node);
     }
 
@@ -1393,6 +1432,8 @@ public class Sc2sa extends DepthFirstAdapter
     public void caseAArrayDeclarationVariableDeclarationVariable(AArrayDeclarationVariableDeclarationVariable node)
     {
         inAArrayDeclarationVariableDeclarationVariable(node);
+        String name = null;
+        Integer width = null;
         if(node.getWholeNumber() != null)
         {
             node.getWholeNumber().apply(this);
@@ -1400,6 +1441,7 @@ public class Sc2sa extends DepthFirstAdapter
         if(node.getIdentif() != null)
         {
             node.getIdentif().apply(this);
+            name = node.getIdentif().getText();
         }
         if(node.getOpeningBracket() != null)
         {
@@ -1408,11 +1450,13 @@ public class Sc2sa extends DepthFirstAdapter
         if(node.getNumbers() != null)
         {
             node.getNumbers().apply(this);
+            width = Integer.parseInt(node.getNumbers().getText());
         }
         if(node.getClosingBracket() != null)
         {
             node.getClosingBracket().apply(this);
         }
+        this.returnValue = new SaDecTab(name,width);
         outAArrayDeclarationVariableDeclarationVariable(node);
     }
 
@@ -1430,14 +1474,17 @@ public class Sc2sa extends DepthFirstAdapter
     public void caseAYesDeclarationVariableOptionalDeclarationVariable(AYesDeclarationVariableOptionalDeclarationVariable node)
     {
         inAYesDeclarationVariableOptionalDeclarationVariable(node);
+        SaLDec op = null;
         if(node.getListDeclarationVariable() != null)
         {
             node.getListDeclarationVariable().apply(this);
+            op = (SaLDec) this.returnValue;
         }
         if(node.getSemicolon() != null)
         {
             node.getSemicolon().apply(this);
         }
+        this.returnValue = op;
         outAYesDeclarationVariableOptionalDeclarationVariable(node);
     }
 
@@ -1455,6 +1502,7 @@ public class Sc2sa extends DepthFirstAdapter
     public void caseANoDeclarationVariableOptionalDeclarationVariable(ANoDeclarationVariableOptionalDeclarationVariable node)
     {
         inANoDeclarationVariableOptionalDeclarationVariable(node);
+        this.returnValue = null;
         outANoDeclarationVariableOptionalDeclarationVariable(node);
     }
 
@@ -1472,22 +1520,31 @@ public class Sc2sa extends DepthFirstAdapter
     public void caseADeclarationFunctionWithParameterDeclarationFunction(ADeclarationFunctionWithParameterDeclarationFunction node)
     {
         inADeclarationFunctionWithParameterDeclarationFunction(node);
+        String name = null;
+        SaLDec op1 = null;
+        SaLDec op2 = null;
+        SaInst op3 = null;
         if(node.getIdentif() != null)
         {
             node.getIdentif().apply(this);
+            name = node.getIdentif().getText();
         }
         if(node.getListParam() != null)
         {
             node.getListParam().apply(this);
+            op1 = (SaLDec) this.returnValue;
         }
         if(node.getOptionalDeclarationVariable() != null)
         {
             node.getOptionalDeclarationVariable().apply(this);
+            op2 = (SaLDec) this.returnValue;
         }
         if(node.getBlocInstruction() != null)
         {
             node.getBlocInstruction().apply(this);
+            op3 = (SaInst) this.returnValue;
         }
+        this.returnValue = new SaDecFonc(name,op1,op2,op3);
         outADeclarationFunctionWithParameterDeclarationFunction(node);
     }
 
@@ -1505,6 +1562,9 @@ public class Sc2sa extends DepthFirstAdapter
     public void caseAWithParamListParam(AWithParamListParam node)
     {
         inAWithParamListParam(node);
+
+        SaLDec op = null;
+
         if(node.getOpeningParenthesis() != null)
         {
             node.getOpeningParenthesis().apply(this);
@@ -1512,11 +1572,13 @@ public class Sc2sa extends DepthFirstAdapter
         if(node.getListDeclarationVariable() != null)
         {
             node.getListDeclarationVariable().apply(this);
+            op = (SaLDec) this.returnValue;
         }
         if(node.getClosingParenthesis() != null)
         {
             node.getClosingParenthesis().apply(this);
         }
+        this.returnValue = op;
         outAWithParamListParam(node);
     }
 
@@ -1542,6 +1604,7 @@ public class Sc2sa extends DepthFirstAdapter
         {
             node.getClosingParenthesis().apply(this);
         }
+        this.returnValue = null;
         outAWithoutParamListParam(node);
     }
 }

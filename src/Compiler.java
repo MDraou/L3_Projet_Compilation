@@ -1,3 +1,6 @@
+import sa.Sa2Xml;
+import sa.SaNode;
+import sc.analysis.Sc2sa;
 import sc.parser.*;
 import sc.lexer.*;
 import sc.node.*;
@@ -50,7 +53,7 @@ public class Compiler
 		tree.apply(new Sc2Xml(baseName));
 	    }
 	    
-	    /*	    System.out.println("[BUILD SA] ");
+	    System.out.println("[BUILD SA] ");
 	    Sc2sa sc2sa = new Sc2sa();
 	    tree.apply(sc2sa);
 	    SaNode saRoot = sc2sa.getRoot();
@@ -59,7 +62,7 @@ public class Compiler
 		System.out.println("[PRINT SA]");
 		new Sa2Xml(saRoot, baseName);
 	    }
-	    
+	    /*
 	    System.out.println("[BUILD TS] ");
 	    Ts tableGlobale = new Sa2ts(saRoot).getTableGlobale();
 
