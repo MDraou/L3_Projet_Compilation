@@ -1,4 +1,4 @@
-#! /usr/bin/python3
+#! /usr/bin/python3 -u
 
 import sys
 import os
@@ -16,6 +16,7 @@ classpath = ""
 outErr = sys.stderr
 outScore = sys.stdout
 outVerbose = open(os.devnull,"w")
+outputFilename = "result.txt"
 
 ################################################################################
 def isEvalFile(filename) :
@@ -26,6 +27,13 @@ def isEvalFile(filename) :
 def compileCompiler() :
   global classpath
   for file in ["Compiler.java", "SaVM.java", "C3aVM.java", "NasmVM.java"] :
+    if not os.path.isfile(srcPath+file) :
+      print("Skipping compilation of %s"%file, file=outVerbose)
+      continue
+    package = file.lower().split('.')[0].replace('vm', '')
+    if package in ["c3a", "nasm"] and not os.path.isdir(srcPath+package) :
+      print("Skipping compilation of %s"%file, file=outVerbose)
+      continue
     print("Compiling %s..."%file, end="", file=outVerbose)
     proc = subprocess.Popen("cd %s && javac %s %s %s"%(srcPath, "-cp " if len(classpath) > 0 else "", classpath, file), shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     errMess = proc.stderr.read().decode('utf8')
@@ -70,7 +78,7 @@ def findClasspath() :
         classpath += ("" if len(classpath) == 0 else ":") + root
         break
 
-  classpath += "/../xerces-2_12_1/*"
+  classpath += ("" if len(classpath) == 0 else ":")+"../xerces-2_12_1/*"
   return classpath
 ################################################################################
 
@@ -279,12 +287,16 @@ def printEvaluationResult(destination, evaluationResult, useColor) :
   nbCorrect = len(correct)
   nbTotal = len(correct) + len(incorrect) + len(notfound)
 
-  score = 100.0*nbCorrect/nbTotal
-  print("Évaluation de %s :"%name, file=destination)
-  print("{}/{} correct ({:6.2f}%)".format(nbCorrect, nbTotal, score), file=destination)
-  printListElements(destination, correct, green, useColor, "CORRECT")
-  printListElements(destination, incorrect, purple, useColor, "INCORRECT")
-  printListElements(destination, notfound, red, useColor, "NON-EXISTANT")
+  score = 0.0
+  if nbTotal > 0 :
+    score = 100.0*nbCorrect/nbTotal
+  for dest, color in [(destination, useColor), (open(outputFilename, "a"), False)] :
+    print("Évaluation de %s :"%name, file=dest)
+    print("{}/{} correct ({:6.2f}%)".format(nbCorrect, nbTotal, score), file=dest)
+    if nbCorrect+len(incorrect) > 0 :
+      printListElements(dest, correct, green, color, "CORRECT")
+      printListElements(dest, incorrect, purple, color, "INCORRECT")
+      printListElements(dest, notfound, red, color, "NON-EXISTANT")
   return score
 ################################################################################
 
@@ -292,7 +304,11 @@ def printEvaluationResult(destination, evaluationResult, useColor) :
 if __name__ == "__main__" :
   parser = argparse.ArgumentParser()
   parser.add_argument("--verbose", "-v", default=False, action="store_true",
-    help="Verbose output.")
+    help="Verbose output (obsolete, verbose is default).")
+  parser.add_argument("--silent", "-s", default=False, action="store_true",
+    help="Less verbose output.")
+  parser.add_argument("--noColors", default=False, action="store_true",
+    help="Disable colors in output.")
   parser.add_argument("--clean", "-c", default=False, action="store_true",
     help="Clean input dir then exit.")
   parser.add_argument("--number", "-n", default=None, type=int,
@@ -301,11 +317,16 @@ if __name__ == "__main__" :
     help="Specify input files.")
   args = parser.parse_args()
 
+  args.verbose = not args.silent
+
   if args.verbose :
     outVerbose = outScore
   if args.clean :
       deleteCompilationOutputs()
       exit(0)
+
+  with open(outputFilename, "w") as _ :
+    pass
 
   inputFiles = args.files[:args.number]
   if len(inputFiles) == 0 :
@@ -320,35 +341,51 @@ if __name__ == "__main__" :
   compileCompiler()
   compileInputFiles(inputFiles)
 
-  useColor = True
-
   scores = []
   names = []
   errors = []
 
+  msg = "Diff de %s"
+  dfSa = lambda files : (evaluateDiff(inputFiles, ".sa", ".sa", "sa-ref/", msg%"sa"), [])
+  dfTs = lambda files : (evaluateDiff(inputFiles, ".ts", ".ts", "ts-ref/", msg%"ts"), [])
+  dfC3a = lambda files : (evaluateDiff(inputFiles, ".c3a", ".c3a", "c3a-ref/", msg%"c3a"), [])
+  dfPreNasm = lambda files : (evaluateDiff(inputFiles, ".pre-nasm", ".pre-nasm", "pre-nasm-ref/", msg%"pre-nasm"), [])
+  dfNasm = lambda files : (evaluateDiff(inputFiles, ".nasm", ".nasm", "nasm-ref/", msg%"nasm"), [])
+
   for evalTarget in [
+                     ("SA-DIFF", dfSa),
+                     ("TS-DIFF", dfTs),
                      ("SA", evaluateSa),
+                     ("C3A-DIFF", dfC3a),
                      ("C3A", evaluateC3a),
+                     ("PRE-NASM-DIFF", dfPreNasm),
                      ("PRE-NASM", evaluatePreNasm),
+                     ("NASM-DIFF", dfNasm),
                      ("NASM", evaluateNasm),
                      ("EXE", evaluateExecutable),
                     ] :
     names.append(evalTarget[0])
     res, err = evalTarget[1](normalInputs)
-    scores.append(printEvaluationResult(outVerbose, res, useColor))
+    scores.append(printEvaluationResult(outVerbose, res, not args.noColors))
     errors += err
 
   deleteClasses()
 
-  if useColor :
+  if not args.noColors :
     print("Légende : {}  {}  {}".format(green("CORRECT"), purple("INCORRECT"), red("NON-EXISTANT")), file=outVerbose)
 
   if not args.verbose :
     print(" ".join(["%s%s"%(name," "*max(0,6-len(name))) for name in names]), file=outScore)
     print(" ".join(["%6.2f%s"%(scores[i]," "*max(0,len(names[i])-6)) for i in range(len(scores))]), file=outScore)
 
+  errorsStr = ""
+
   if len(errors) > 0 :
-    print(30*"-", "EVALUATION ERRORS", 30*"-")
-    print("\n".join(errors))
+    errorsStr = "%s\n%s"%((30*"-")+("EVALUATION ERRORS")+(30*"-"), "\n\n".join(errors))
+
+  print(errorsStr)
+  print(errorsStr, file=open(outputFilename, "a"))
+
+  print("\nSauvegardé dans le fichier %s"%outputFilename)
 ################################################################################
 

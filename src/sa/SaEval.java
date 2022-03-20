@@ -9,7 +9,27 @@ public class SaEval extends SaDepthFirstVisitor <Integer> {
     private int[] varGlob;
     private ArrayList<String> programOutput = new ArrayList<String>();
     private boolean stop;
-      
+    private static final int SIZEOF_ENTIER = 4;
+    private int getVarGlob(TsItemVar tsItem){
+	// les adresses sont en octets, mais varGlob est un tableau d'entiers
+	return varGlob[tsItem.adresse / SIZEOF_ENTIER];
+    }
+		       
+    private int getVarGlobIndicee(TsItemVar tsItem, int indice){
+	// les adresses sont en octets, mais varGlob est un tableau d'entiers
+	return varGlob[tsItem.adresse / SIZEOF_ENTIER + indice];
+    }
+		       
+    private void setVarGlob(TsItemVar tsItem, int val){
+	// les adresses sont en octets, mais varGlob est un tableau d'entiers
+	varGlob[tsItem.adresse / SIZEOF_ENTIER] = val;
+    }
+		       
+    private void setVarGlobIndicee(TsItemVar tsItem, int indice, int val){
+	// les adresses sont en octets, mais varGlob est un tableau d'entiers
+	varGlob[tsItem.adresse / SIZEOF_ENTIER + indice] = val;
+    }
+		       
     public SaEval(SaNode root, Ts tableGlobale){
 	    this.tableGlobale = tableGlobale;
 	    curEnv = null;
@@ -157,13 +177,16 @@ public class SaEval extends SaDepthFirstVisitor <Integer> {
 	if(node.getLhs() instanceof SaVarIndicee){ // c'est une case de tableau, donc forcément globale
 	    SaVarIndicee lhsIndicee = (SaVarIndicee) node.getLhs();
 	    int indice = lhsIndicee.getIndice().accept(this);
-	    int base = lhsIndicee.tsItem.adresse;
-	    varGlob[base + indice] = val;
+		    /*int base = lhsIndicee.tsItem.adresse;
+	    varGlob[base + indice] = val;*/
+	    setVarGlobIndicee(lhsIndicee.tsItem, indice, val);
+	    
 	}
 	else{// lhs est une variable simple, trois cas possibles : une variable locale, une variable globale ou un argument
 	    SaVarSimple lhsSimple = (SaVarSimple) node.getLhs();
 	    if(lhsSimple.tsItem.portee == this.tableGlobale){ // variable globale
-		varGlob[lhsSimple.tsItem.adresse] = val;
+		setVarGlob(lhsSimple.tsItem, val);
+		//		varGlob[lhsSimple.tsItem.adresse] = val;
 	    }
 	    else if(lhsSimple.tsItem.isParam){ // parametre
 		curEnv.setArg(lhsSimple.tsItem.adresse, val);
@@ -193,7 +216,8 @@ public class SaEval extends SaDepthFirstVisitor <Integer> {
 	int val = 0;
 
 	if(node.tsItem.portee == this.tableGlobale){ // variable globale
-	    val = varGlob[node.tsItem.adresse];
+	    //	    val = varGlob[node.tsItem.adresse];
+	    val = getVarGlob(node.tsItem);
 	}
 	else if(node.tsItem.isParam){ // parametre
 	    val = curEnv.getArg(node.tsItem.adresse);
@@ -213,15 +237,16 @@ public class SaEval extends SaDepthFirstVisitor <Integer> {
 	SaLExp lArgs = null;
 	SaLExp l;
 	Ts localTable = fct.getTable();
-	int i = 0;
+	int adr = 0;
 	SaEnvironment newEnv = new SaEnvironment(node.tsItem);
 
 	//	localTable.affiche(System.out);
 
 	for(lArgs = node.getArguments(); lArgs != null; lArgs = lArgs.getQueue()){
 	    int val = lArgs.getTete().accept(this);
-	    newEnv.setArg(i, val);
-	    i++;
+	    newEnv.setArg(adr, val);
+	    // les adresses sont en octets et les paramètres sont des entiers stockés sur 4 octets
+	    adr += SIZEOF_ENTIER;
 	}
 	//sauvegarde de l'environnement courant pour le restaurer après l'appel
 	SaEnvironment oldEnv = curEnv;
@@ -391,9 +416,10 @@ public class SaEval extends SaDepthFirstVisitor <Integer> {
 	defaultIn(node);
 	node.getIndice().accept(this);
 	int indice = node.getIndice().accept(this);
-	int base = node.tsItem.adresse;
+	//	int base = node.tsItem.adresse;
 	defaultOut(node);
-	return varGlob[base + indice];
+	//	return varGlob[base + indice];
+	return getVarGlobIndicee(node.tsItem, indice);
     }
     
 }

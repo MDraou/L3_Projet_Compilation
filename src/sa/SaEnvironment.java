@@ -13,20 +13,20 @@ public class SaEnvironment {
 	Ts localTable = fct.getTable();
 	int i = 0;
 
+       	args = new int[localTable.nbArg()];
+	vars = new int[localTable.nbVar()];
+	returnValue = 0;
 	//	System.out.println("allocation d'un nouvel environnement");
 	//	System.out.println("nb var = " + localTable.nbVar());
 	//	System.out.println("nb arg = " + localTable.nbArg());
 	
-       	args = new int[localTable.nbArg()];
-	vars = new int[localTable.nbVar()];
-	returnValue = 0;
     }
 
-    public int getVar(int i){return vars[i];}
-    public void setVar(int i, int val){vars[i] = val;}
+    public int getVar(int adr){return vars[adr/4];}
+    public void setVar(int adr, int val){vars[adr/4] = val;}
     
-    public int getArg(int i){return args[i];}
-    public void setArg(int i, int val){args[i] = val;}
+    public int getArg(int adr){return args[adr/4];}
+    public void setArg(int adr, int val){args[adr/4] = val;}
     
     public int getReturnValue(){return returnValue;}
     public void setReturnValue(int val){returnValue = val;}

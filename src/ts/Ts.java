@@ -12,8 +12,10 @@ public class Ts
 
     public int getAdrVarCourante(){return adrVarCourante;}
 
-    public int nbVar(){return adrVarCourante;}
-    public int nbArg(){return adrArgCourant;}
+    // les adresses sont en octets, les entiers sont stockés sur 4 octets, d'où cette division par 4
+    // ce n'est pas très beau, il faudrait changer ça
+    public int nbVar(){return adrVarCourante / 4;}
+    public int nbArg(){return adrArgCourant / 4;}
     
     
     public Ts(){
@@ -35,7 +37,9 @@ public class Ts
 
     public TsItemVar addParam(String identif)
     {
-	TsItemVar item = new TsItemVar(identif, 1);
+	//	TsItemVar item = new TsItemVar(identif, 1);
+	// on compte en octets, un entier est codé sur 4 octets
+	TsItemVar item = new TsItemVar(identif, 4);
 	item.portee = this;
 	item.adresse = this.adrArgCourant;
 	item.isParam = true;
