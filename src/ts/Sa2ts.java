@@ -25,6 +25,7 @@ public class Sa2ts extends SaDepthFirstVisitor <Void> {
     public Void visit(SaDecVar node)
     {
         defaultIn(node);
+
         defaultOut(node);
         return null;
     }
@@ -89,20 +90,17 @@ public class Sa2ts extends SaDepthFirstVisitor <Void> {
         defaultIn(node);
         if (tableGlobale.getFct(node.getNom()) != null){
             if (tableGlobale.getFct("main") != null) {
-                if (tableGlobale.getFct(node.getNom()).saDecFonc.getParametres() != null) {
-                    if (node.getArguments().length() == tableGlobale.getFct(node.getNom()).saDecFonc.getParametres().length()) {
-                        node.tsItem = tableGlobale.getFct(node.getNom());
-                    } else {
-                        System.out.println("La fonction" + node.getNom() + "n'as pas le bon nombre d'arguments");
-                        System.exit(2);
-                    }
-                } else {
-                    if (node.getArguments().length() == 0) {
-                        node.tsItem = tableGlobale.getFct(node.getNom());
-                    } else {
-                        System.out.println("La fonction" + node.getNom() + "n'as pas le bon nombre d'arguments");
-                        System.exit(2);
-                    }
+                // modification possible en seulement 1 if, 1 else if et un else
+                SaLDec parametres = tableGlobale.getFct(node.getNom()).saDecFonc.getParametres();
+                if (parametres != null && node.getArguments().length() == parametres.length()){
+                    node.tsItem = tableGlobale.getFct(node.getNom());
+                }
+                else if (node.getArguments().length() == 0){
+                    node.tsItem = tableGlobale.getFct(node.getNom());
+                }
+                else {
+                    System.out.println("La fonction" + node.getNom() + "n'as pas le bon nombre d'arguments");
+                    System.exit(2);
                 }
             } else {
                 System.out.println("La fonction main n'est pas déclarée");

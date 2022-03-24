@@ -657,10 +657,13 @@ public class Sc2sa extends DepthFirstAdapter
     public void caseAFunctionExprEnd(AFunctionExprEnd node)
     {
         inAFunctionExprEnd(node);
+        SaAppel op = null;
         if(node.getFunction() != null)
         {
             node.getFunction().apply(this);
+            op = (SaAppel) this.returnValue;
         }
+        this.returnValue = new SaExpAppel(op);
         outAFunctionExprEnd(node);
     }
 
