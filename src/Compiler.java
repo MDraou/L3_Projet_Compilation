@@ -1,11 +1,10 @@
 import sa.Sa2Xml;
 import sa.SaNode;
-import sc.analysis.Sc2sa;
 import sc.parser.*;
 import sc.lexer.*;
 import sc.node.*;
 import java.io.*;
-import sa.*;
+
 import ts.*;
 //import c3a.*;
 //import nasm.*;

@@ -74,7 +74,7 @@ public class SaDepthFirstVisitor <T> implements SaVisitor <T>{
     }
 
     // P -> LDEC LDEC 
-    public T visit(SaProg node)
+    public T visit(SaProg node) //pas à faire
     {
 	defaultIn(node);
 	if(node.getVariables() != null)
