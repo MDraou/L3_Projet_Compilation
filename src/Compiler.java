@@ -7,7 +7,7 @@ import java.io.*;
 
 import ts.*;
 import c3a.*;
-//import nasm.*;
+import nasm.*;
 //import fg.*;
 //import ig.*;
 
@@ -78,14 +78,14 @@ public class Compiler
 		c3a.affiche(baseName);
 	    }
 
-		/*
+
 	    System.out.println("[BUILD PRE NASM] ");
 	    Nasm nasm = new C3a2nasm(c3a, tableGlobale).getNasm();
 	    if(verboseLevel > 1){
 		System.out.println("[PRINT PRE NASM] ");
 		nasm.affichePreNasm(baseName);
 	    }
-	    
+	    /*
 	    System.out.println("[BUILD FG] ");
 	    Fg fg = new Fg(nasm);
 		
