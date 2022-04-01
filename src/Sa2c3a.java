@@ -347,15 +347,16 @@ public class Sa2c3a extends SaDepthFirstVisitor <C3aOperand> {
 		defaultIn(node);
 		C3aLabel labelFalse = c3a.newAutoLabel();
 		C3aLabel labelContinue = c3a.newAutoLabel();
+		C3aOperand temp = c3a.newTemp();
 		C3aOperand labelTest = node.getTest().accept(this);
-		c3a.ajouteInst(new C3aInstJumpIfEqual(labelTest, c3a.False, labelFalse, null));
-		node.getOui().accept(this);
-		c3a.ajouteInst(new C3aInstJump(labelContinue, ""));
-		c3a.addLabelToNextInst(labelFalse);
-		node.getNon().accept(this);
+		c3a.ajouteInst(new C3aInstJumpIfEqual(labelTest, c3a.False, labelContinue, null));
+		c3a.ajouteInst(new C3aInstAffect(node.getOui().accept(this), temp, ""));
+		c3a.ajouteInst(new C3aInstJump(labelFalse, ""));
 		c3a.addLabelToNextInst(labelContinue);
+		c3a.ajouteInst(new C3aInstAffect(node.getNon().accept(this), temp, ""));
+		c3a.addLabelToNextInst(labelFalse);
 		defaultOut(node);
-		return null;
+		return temp;
 	}
 
 	public void defaultOut(SaNode node)
