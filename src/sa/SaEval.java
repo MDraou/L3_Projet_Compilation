@@ -185,7 +185,7 @@ public class SaEval extends SaDepthFirstVisitor <Integer> {
 	else{// lhs est une variable simple, trois cas possibles : une variable locale, une variable globale ou un argument
 	    SaVarSimple lhsSimple = (SaVarSimple) node.getLhs();
 	    if(lhsSimple.tsItem.portee == this.tableGlobale){ // variable globale
-		setVarGlob(lhsSimple.tsItem, val);
+		setVarGlob(lhsSimple.tsItem, val + getVarGlob(lhsSimple.tsItem));
 		//		varGlob[lhsSimple.tsItem.adresse] = val;
 	    }
 	    else if(lhsSimple.tsItem.isParam){ // parametre
@@ -193,6 +193,37 @@ public class SaEval extends SaDepthFirstVisitor <Integer> {
 	    }
 	    else { // variable locale
 		curEnv.setVar(lhsSimple.tsItem.adresse, val);
+	    }
+	}
+	defaultOut(node);
+	return 1;
+    }
+    
+    public Integer visit(SaInstIncremente node)
+    {
+	defaultIn(node);
+	int val = node.getRhs().accept(this);
+	
+
+	if(node.getLhs() instanceof SaVarIndicee){ // c'est une case de tableau, donc forcément globale
+	    SaVarIndicee lhsIndicee = (SaVarIndicee) node.getLhs();
+	    int indice = lhsIndicee.getIndice().accept(this);
+		    /*int base = lhsIndicee.tsItem.adresse;
+	    varGlob[base + indice] = val;*/
+	    setVarGlobIndicee(lhsIndicee.tsItem, indice, val + getVarGlobIndicee(lhsIndicee.tsItem, indice));
+	    
+	}
+	else{// lhs est une variable simple, trois cas possibles : une variable locale, une variable globale ou un argument
+	    SaVarSimple lhsSimple = (SaVarSimple) node.getLhs();
+	    if(lhsSimple.tsItem.portee == this.tableGlobale){ // variable globale
+		setVarGlob(lhsSimple.tsItem, val + getVarGlob(lhsSimple.tsItem));
+		//		varGlob[lhsSimple.tsItem.adresse] = val;
+	    }
+	    else if(lhsSimple.tsItem.isParam){ // parametre
+		curEnv.setArg(lhsSimple.tsItem.adresse, val + curEnv.getArg(lhsSimple.tsItem.adresse));
+	    }
+	    else { // variable locale
+		curEnv.setVar(lhsSimple.tsItem.adresse, val + curEnv.getVar(lhsSimple.tsItem.adresse));
 	    }
 	}
 	defaultOut(node);
@@ -272,6 +303,22 @@ public class SaEval extends SaDepthFirstVisitor <Integer> {
 	return val;
     }
 
+    
+    public Integer visit(SaExpOptTer node)
+    {
+	int res = 0;
+	defaultIn(node);
+	int op1 = node.getTest().accept(this);
+	if(op1 != 0)
+	    res = node.getOui().accept(this);
+	else
+	    res = node.getNon().accept(this);
+	defaultOut(node);
+	return res;
+    }
+
+
+    
     // EXP -> add EXP EXP
     public Integer visit(SaExpAdd node)
     {

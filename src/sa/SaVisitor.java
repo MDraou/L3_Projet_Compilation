@@ -8,6 +8,7 @@ interface SaVisitor <T> {
     public T visit(SaInstBloc node);
     public T visit(SaInstSi node);
     public T visit(SaInstAffect node);
+    public T visit(SaInstIncremente node);
     public T visit(SaInstRetour node);
     public T visit(SaDecFonc node);
     public T visit(SaDecVar node);
@@ -16,6 +17,7 @@ interface SaVisitor <T> {
     public T visit(SaVarSimple node);
     public T visit(SaAppel node);
     public T visit(SaExp node);
+    public T visit(SaExpOptTer node);
     public T visit(SaExpLire node);
     public T visit(SaExpInt node);
     public T visit(SaExpVar node);
