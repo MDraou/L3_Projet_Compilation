@@ -217,6 +217,18 @@ public class Sa2Xml extends SaDepthFirstVisitor < Void > {
 	return null;
     }
     
+    public Void visit(SaInstIncremente node)
+    {
+	String nodeName = this.childName;
+	printOpenTag(nodeName, node);
+	this.childName = "lhs";
+	node.getLhs().accept(this);
+	this.childName = "rhs";
+	node.getRhs().accept(this);
+	printCloseTag(nodeName);
+	return null;
+    }
+    
     // LDEC -> DEC LDEC 
     // LDEC -> null 
     public Void visit(SaLDec node)
@@ -271,6 +283,22 @@ public class Sa2Xml extends SaDepthFirstVisitor < Void > {
 	return null;
     }
 
+    public Void visit(SaExpOptTer node)
+    {
+	String nodeName = this.childName;
+	printOpenTag(nodeName, node);
+	childName = "test";
+	node.getTest().accept(this);
+	childName = "oui";
+	node.getOui().accept(this);
+	childName = "non";
+	node.getNon().accept(this);
+	printCloseTag(nodeName);
+	return null;
+    }
+
+
+    
     // EXP -> add EXP EXP
     public Void visit(SaExpAdd node)
     {

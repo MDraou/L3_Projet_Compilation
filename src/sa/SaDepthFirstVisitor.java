@@ -161,6 +161,15 @@ public class SaDepthFirstVisitor <T> implements SaVisitor <T>{
 	return null;
     }
     
+    public T visit(SaInstIncremente node)
+    {
+	defaultIn(node);
+	node.getLhs().accept(this);
+	node.getRhs().accept(this);
+	defaultOut(node);
+	return null;
+    }
+    
     public T visit(SaInstAffect node)
     {
 	defaultIn(node);
@@ -200,6 +209,17 @@ public class SaDepthFirstVisitor <T> implements SaVisitor <T>{
     {
 	defaultIn(node);
 	node.getVal().accept(this);
+	defaultOut(node);
+	return null;
+    }
+
+
+    public T visit(SaExpOptTer node)
+    {
+	defaultIn(node);
+	node.getTest().accept(this);
+	node.getOui().accept(this);
+	node.getNon().accept(this);
 	defaultOut(node);
 	return null;
     }

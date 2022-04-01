@@ -120,6 +120,8 @@ public class SaVM {
     public static SaInst processSaInst(Node node){
 
 	String instType = getType(node);
+	if(instType.equals("SaInstIncremente"))
+	    return processSaInstIncremente(node);
 	if(instType.equals("SaInstAffect"))
 	    return processSaInstAffect(node);
 	if(instType.equals("SaInstTantQue"))
@@ -147,6 +149,18 @@ public class SaVM {
 		rhs = processSaExp(child);
 	}
 	return new SaInstAffect(lhs, rhs);
+    }  
+
+    public static SaInstIncremente processSaInstIncremente(Node node){
+	SaVar lhs = null;
+	SaExp rhs = null;
+	for(Node child = node.getFirstChild(); child != null; child = child.getNextSibling()){
+	    if(child.getNodeName().equals("lhs"))
+		lhs = processSaVar(child);
+	    else if(child.getNodeName().equals("rhs"))
+		rhs = processSaExp(child);
+	}
+	return new SaInstIncremente(lhs, rhs);
     }  
 
 
@@ -258,11 +272,31 @@ public class SaVM {
 	if(expType.equals("SaExpAppel"))
 	    return processSaExpAppel(node);
 
+	if(expType.equals("SaExpOptTer"))
+	    return processSaExpOptTer(node);
+
+	
 	return null;
     }
 
 
+    public static SaExpOptTer processSaExpOptTer(Node node){
+	SaExp test = null;
+	SaExp oui = null;
+	SaExp non = null;
+	for(Node child = node.getFirstChild(); child != null; child = child.getNextSibling()){
+	    if(child.getNodeName().equals("test"))
+		test = processSaExp(child);
+	    else if(child.getNodeName().equals("oui"))
+		oui = processSaExp(child);
+	    else if(child.getNodeName().equals("non"))
+		non = processSaExp(child);
+	}
+	return new SaExpOptTer(test, oui, non);
+	
+    }
 
+    
     public static SaExpInf processSaExpInf(Node node){
 	SaExp op1 = null;
 	SaExp op2 = null;
