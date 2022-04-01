@@ -332,8 +332,11 @@ public class Sa2c3a extends SaDepthFirstVisitor <C3aOperand> {
 	public C3aOperand visit(SaInstIncremente node)
 	{
 		defaultIn(node);
-		node.getLhs().accept(this);
-		node.getRhs().accept(this);
+		C3aOperand op1 = node.getLhs().accept(this);
+		C3aOperand op2 = node.getRhs().accept(this);
+		C3aOperand temp = c3a.newTemp();
+		c3a.ajouteInst(new C3aInstAdd(op1, op2, temp, ""));
+		c3a.ajouteInst(new C3aInstAffect(temp, node.getLhs().accept(this), ""));
 		defaultOut(node);
 		return null;
 	}
