@@ -328,6 +328,33 @@ public class Sa2c3a extends SaDepthFirstVisitor <C3aOperand> {
 		return result;
 	}
 
+	@Override
+	public C3aOperand visit(SaInstIncremente node)
+	{
+		defaultIn(node);
+		node.getLhs().accept(this);
+		node.getRhs().accept(this);
+		defaultOut(node);
+		return null;
+	}
+
+	@Override
+	public C3aOperand visit(SaExpOptTer node)
+	{
+		defaultIn(node);
+		C3aLabel labelFalse = c3a.newAutoLabel();
+		C3aLabel labelContinue = c3a.newAutoLabel();
+		C3aOperand labelTest = node.getTest().accept(this);
+		c3a.ajouteInst(new C3aInstJumpIfEqual(labelTest, c3a.False, labelFalse, null));
+		node.getOui().accept(this);
+		c3a.ajouteInst(new C3aInstJump(labelContinue, ""));
+		c3a.addLabelToNextInst(labelFalse);
+		node.getNon().accept(this);
+		c3a.addLabelToNextInst(labelContinue);
+		defaultOut(node);
+		return null;
+	}
+
 	public void defaultOut(SaNode node)
     {
 	indentation--;

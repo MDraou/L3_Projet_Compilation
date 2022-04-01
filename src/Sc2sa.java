@@ -80,27 +80,103 @@ public class Sc2sa extends DepthFirstAdapter
         outAProgProgram(node);
     }
 
-    public void inAExprOrExpr(AExprOrExpr node)
+    public void inATernaireExpr(ATernaireExpr node)
     {
         defaultIn(node);
     }
 
-    public void outAExprOrExpr(AExprOrExpr node)
+    public void outATernaireExpr(ATernaireExpr node)
     {
         defaultOut(node);
     }
 
     @Override
-    public void caseAExprOrExpr(AExprOrExpr node)
+    public void caseATernaireExpr(ATernaireExpr node)
     {
-        inAExprOrExpr(node);
+        inATernaireExpr(node);
+
+        SaExp op1 = null;
+        SaExp op2 = null;
+        SaExp op3 = null;
+
+        if(node.getOpeningBracket() != null)
+        {
+            node.getOpeningBracket().apply(this);
+        }
+        if(node.getExpr1() != null)
+        {
+            node.getExpr1().apply(this);
+            op1 = (SaExp) this.returnValue;
+        }
+        if(node.getClosingBracket() != null)
+        {
+            node.getClosingBracket().apply(this);
+        }
+        if(node.getInterrogation() != null)
+        {
+            node.getInterrogation().apply(this);
+        }
+        if(node.getExpr2() != null)
+        {
+            node.getExpr2().apply(this);
+            op2 = (SaExp) this.returnValue;
+        }
+        if(node.getColon() != null)
+        {
+            node.getColon().apply(this);
+        }
+        if(node.getExpr3() != null)
+        {
+            node.getExpr3().apply(this);
+            op3 = (SaExp) this.returnValue;
+        }
+        this.returnValue = new SaExpOptTer(op1,op2,op3);
+        outATernaireExpr(node);
+    }
+
+    public void inATernaireFinishExpr(ATernaireFinishExpr node)
+    {
+        defaultIn(node);
+    }
+
+    public void outATernaireFinishExpr(ATernaireFinishExpr node)
+    {
+        defaultOut(node);
+    }
+
+    @Override
+    public void caseATernaireFinishExpr(ATernaireFinishExpr node)
+    {
+        inATernaireFinishExpr(node);
+        if(node.getExprOr() != null)
+        {
+            node.getExprOr().apply(this);
+        }
+        outATernaireFinishExpr(node);
+    }
+
+
+    public void inAExprOrExprOr(AExprOrExprOr node)
+    {
+        defaultIn(node);
+    }
+
+    public void outAExprOrExprOr(AExprOrExprOr node)
+    {
+        defaultOut(node);
+    }
+
+    @Override
+    public void caseAExprOrExprOr(AExprOrExprOr node)
+    {
+        inAExprOrExprOr(node);
 
         SaExp op1 = null;
         SaExp op2 = null;
 
-        if(node.getExpr() != null)
+        if(node.getExprOr() != null)
         {
-            node.getExpr().apply(this);
+            node.getExprOr().apply(this);
             op1 = (SaExp) this.returnValue;
         }
         if(node.getOr() != null)
@@ -115,28 +191,28 @@ public class Sc2sa extends DepthFirstAdapter
 
         this.returnValue = new SaExpOr(op1, op2);
 
-        outAExprOrExpr(node);
+        outAExprOrExprOr(node);
     }
 
-    public void inAExprOrFinishExpr(AExprOrFinishExpr node)
+    public void inAExprOrFinishExprOr(AExprOrFinishExprOr node)
     {
         defaultIn(node);
     }
 
-    public void outAExprOrFinishExpr(AExprOrFinishExpr node)
+    public void outAExprOrFinishExprOr(AExprOrFinishExprOr node)
     {
         defaultOut(node);
     }
 
     @Override
-    public void caseAExprOrFinishExpr(AExprOrFinishExpr node)
+    public void caseAExprOrFinishExprOr(AExprOrFinishExprOr node)
     {
-        inAExprOrFinishExpr(node);
+        inAExprOrFinishExprOr(node);
         if(node.getExprAnd() != null)
         {
             node.getExprAnd().apply(this);
         }
-        outAExprOrFinishExpr(node);
+        outAExprOrFinishExprOr(node);
     }
 
     public void inAExprAndExprAnd(AExprAndExprAnd node)
@@ -1264,6 +1340,46 @@ public class Sc2sa extends DepthFirstAdapter
         }
         this.returnValue = new SaInstRetour(op);
         outAReturnInstruction(node);
+    }
+
+    public void inAIncrementationInstruction(AIncrementationInstruction node)
+    {
+        defaultIn(node);
+    }
+
+    public void outAIncrementationInstruction(AIncrementationInstruction node)
+    {
+        defaultOut(node);
+    }
+
+    @Override
+    public void caseAIncrementationInstruction(AIncrementationInstruction node)
+    {
+        inAIncrementationInstruction(node);
+        SaExpVar temp = null;
+        SaVar op1 = null;
+        SaExp op2 = null;
+        if(node.getVariable() != null)
+        {
+            node.getVariable().apply(this);
+            temp = (SaExpVar) this.returnValue;
+            op1 = temp.getVar();
+        }
+        if(node.getIncr() != null)
+        {
+            node.getIncr().apply(this);
+        }
+        if(node.getExpr() != null)
+        {
+            node.getExpr().apply(this);
+            op2 = (SaExp) this.returnValue;
+        }
+        if(node.getSemicolon() != null)
+        {
+            node.getSemicolon().apply(this);
+        }
+        this.returnValue = new SaInstIncremente(op1,op2);
+        outAIncrementationInstruction(node);
     }
 
     public void inAElseBlocElseBloc(AElseBlocElseBloc node)

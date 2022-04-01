@@ -24,6 +24,9 @@ div = '/';
 equal = '=';
 inf = '<';
 no = '!';
+incr = '+=';
+interrogation = '?';
+colon = ':';
 semicolon = ';';
 opening_brace = '{';
 closing_brace = '}';
@@ -50,7 +53,11 @@ program =
 {prog} optional_declaration_variable list_declaration_function;
 
 expr =
-{expr_or} expr or expr_and |
+{ternaire} opening_bracket [expr1]:expr_or closing_bracket interrogation [expr2]:expr_or colon [expr3]:expr_or |
+{ternaire_finish} expr_or;
+
+expr_or =
+{expr_or} expr_or or expr_and |
 {expr_or_finish} expr_and;
 
 expr_and = 
@@ -114,7 +121,8 @@ instruction =
 {function_call} function semicolon |
 {new_bloc_instruction} bloc_instruction |
 {empty} semicolon |
-{return} return expr semicolon;
+{return} return expr semicolon |
+{incrementation} variable incr expr semicolon;
 
 else_bloc =
 {else_bloc} else bloc_instruction;
